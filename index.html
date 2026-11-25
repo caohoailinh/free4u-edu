@@ -633,9 +633,12 @@
                             <button type="button" onclick="exportRevenueExpenseExcel()" class="px-3.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-semibold flex items-center gap-1.5 transition">
                                 <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Xuất Excel Doanh Thu - Chi Phí
                             </button>
-                            <button type="button" onclick="printRevenueExpenseReport()" class="px-3.5 py-2 rounded-xl bg-blue-700 hover:bg-slate-900 text-white text-xs font-semibold flex items-center gap-1.5 transition">
+                            <button type="button" onclick="printRevenueExpenseReport()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold flex items-center gap-1.5 transition">
                                 <i data-lucide="printer" class="w-4 h-4"></i> In Báo Cáo Doanh Thu - Chi Phí
-                            </button>                            
+                            </button>
+                            <button type="button" onclick="exportReportExcel()" class="px-3.5 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 text-xs font-semibold flex items-center gap-1.5 transition">
+                                <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Xuất Báo Cáo Excel
+                            </button>
                             <button type="button" onclick="printFinancialReport()" class="px-4 py-2 rounded-xl bg-blue-900 hover:bg-blue-800 text-white text-xs font-semibold flex items-center gap-1.5 transition">
                                 <i data-lucide="printer" class="w-4 h-4"></i> In Báo Cáo Lợi Nhuận
                             </button>
@@ -643,26 +646,26 @@
                     </div>
 
                     <!-- Thẻ KPI Doanh thu - Chi phí - Lợi nhuận -->
-                    <div id="report-summary-cards" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4"></div>                   
+                    <div id="report-summary-cards" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4"></div>
 
                     <!-- Biểu đồ phân tích Doanh thu - Chi phí - Lợi nhuận -->
-                    <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
-                        <div class="xl:col-span-8 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs" ">
+                    <div class="grid grid-cols-1 gap-6">
+                        <div class="w-full bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
                             <div class="mb-3">
                                 <h3 class="font-bold text-slate-900 text-sm">Xu Hướng Doanh Thu - Chi Phí - Lợi Nhuận Ròng</h3>
                                 <p class="text-xs text-slate-500">So sánh hiệu quả kinh doanh theo từng tháng (VNĐ)</p>
                             </div>
-                            <div class="h-64">
-                                <canvas id="chart-report-profit"></canvas>
+                            <div class="h-72 w-full">
+                                <canvas id="chart-report-profit" class="w-full h-full"></canvas>
                             </div>
                         </div>
-                        <div class="xl:col-span-4 bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
-                            <div class="mb-4">
+                        <div class="w-full bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
+                            <div class="mb-3">
                                 <h3 class="font-bold text-slate-900 text-sm">Tỷ Trọng Nguồn Thu & Khoản Chi</h3>
                                 <p class="text-xs text-slate-500">Cơ cấu doanh thu học phí, thu khác và chi phí vận hành</p>
                             </div>
-                            <div class="h-64">
-                                <canvas id="chart-report-breakdown"></canvas>
+                            <div class="h-72 w-full">
+                                <canvas id="chart-report-breakdown" class="w-full h-full"></canvas>
                             </div>
                         </div>
                     </div>
@@ -1008,6 +1011,7 @@
                 <button onclick="closeModal('modal-tuition')" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             <form id="form-tuition" onsubmit="saveTuition(event)" class="p-6 space-y-4">
+                <input type="hidden" id="tui-edit-id">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">Mã phiếu thu *</label>
@@ -1020,12 +1024,16 @@
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">Chọn Học viên *</label>
-                    <select id="tui-student" onchange="onTuitionStudentChange()" required class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm"></select>
+                    <input type="hidden" id="tui-student" required>
+                    <div class="relative">
+                        <input type="text" id="tui-student-search" autocomplete="off" onfocus="filterTuitionStudents()" oninput="filterTuitionStudents()" placeholder="Nhập tên, mã HV, SĐT hoặc lớp để tìm..." required class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm">
+                        <div id="tui-student-dropdown" class="hidden absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-52 overflow-y-auto custom-scrollbar z-30 divide-y divide-slate-100"></div>
+                    </div>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Học phí phải đóng (VNĐ) *</label>
-                        <input type="text" inputmode="numeric" id="tui-total" oninput="onMoneyInputChange('tui-total')" required class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm font-semibold">
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Tổng học phí / Công nợ (VNĐ) *</label>
+                        <input type="text" inputmode="numeric" id="tui-total" oninput="onMoneyInputChange('tui-total')" required class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm font-bold text-slate-800">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">Số tiền thực đóng (VNĐ) *</label>
@@ -1042,8 +1050,8 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Ghi chú</label>
-                        <input type="text" id="tui-note" placeholder="VD: Đóng đợt 1..." class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm">
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Ghi chú phiếu thu</label>
+                        <input type="text" id="tui-note" placeholder="VD: Đóng học phí đợt 1..." class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm">
                     </div>
                 </div>
                 <div class="pt-3 flex justify-end gap-2 border-t border-slate-100">
@@ -1054,12 +1062,12 @@
         </div>
     </div>
 
-    <!-- MODAL: THÔNG BÁO HỌC PHÍ & MÃ QR -->
+    <!-- MODAL: TẠO THÔNG BÁO HỌC PHÍ & QR ĐƠN LẺ -->
     <div id="modal-tuition-notice" class="fixed inset-0 bg-slate-900/50 z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden">
             <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
                 <h3 class="font-bold text-slate-800">Tạo Thông Báo Học Phí & Mã QR</h3>
-                <button onclick="closeModal('modal-tuition-notice')" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+                <button type="button" onclick="closeModal('modal-tuition-notice')" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             <form id="form-tuition-notice" onsubmit="generateTuitionNotice(event)" class="p-6 space-y-4">
                 <div>
@@ -1068,7 +1076,7 @@
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Số tiền thanh toán (VNĐ) *</label>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Số tiền thông báo (VNĐ) *</label>
                         <input type="text" inputmode="numeric" id="notice-amount" oninput="onMoneyInputChange('notice-amount')" required class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm font-bold text-blue-900">
                     </div>
                     <div>
@@ -1077,16 +1085,16 @@
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nội dung chuyển khoản QR (HP &lt;mã lớp&gt;&lt;Tên&gt;)</label>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Nội dung chuyển khoản (Mã QR) *</label>
                     <input type="text" id="notice-memo" required class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm font-mono">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Ghi chú thêm (hiển thị trên thông báo)</label>
-                    <input type="text" id="notice-note" placeholder="VD: Đóng trước hạn để nhận ưu đãi giáo trình..." class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm">
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Ghi chú gửi phụ huynh / học viên</label>
+                    <input type="text" id="notice-note" placeholder="Vui lòng thanh toán đúng hạn..." class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm">
                 </div>
                 <div class="pt-3 flex justify-end gap-2 border-t border-slate-100">
                     <button type="button" onclick="closeModal('modal-tuition-notice')" class="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50">Hủy</button>
-                    <button type="submit" class="px-5 py-2 rounded-xl bg-sky-700 hover:bg-sky-800 text-white text-sm font-semibold">Tạo Thông Báo & Xem QR</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-sm font-semibold">Tạo Thông Báo QR</button>
                 </div>
             </form>
         </div>
@@ -1097,12 +1105,12 @@
         <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
             <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
                 <h3 class="font-bold text-slate-800">Thu Học Phí Hàng Loạt</h3>
-                <button onclick="closeModal('modal-bulk-tuition')" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+                <button type="button" onclick="closeModal('modal-bulk-tuition')" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             <form id="form-bulk-tuition" onsubmit="saveBulkTuition(event)" class="flex-1 flex flex-col overflow-hidden">
                 <div class="p-4 sm:px-6 bg-white border-b border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Ngày thu *</label>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Ngày thu tiền *</label>
                         <input type="date" id="bulk-tui-date" required class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm">
                     </div>
                     <div>
@@ -1219,7 +1227,10 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">Đối tượng nộp / nhận</label>
-                        <input type="text" id="fin-partner" placeholder="Tên người/đơn vị..." class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm">
+                        <div class="relative">
+                            <input type="text" id="fin-partner" autocomplete="off" onfocus="filterFinancePartners()" oninput="filterFinancePartners()" placeholder="Nhập tên hoặc mã để tìm đối tượng..." class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm">
+                            <div id="fin-partner-dropdown" class="hidden absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-48 overflow-y-auto custom-scrollbar z-20 divide-y divide-slate-100"></div>
+                        </div>
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">Hình thức thanh toán</label>
@@ -1371,7 +1382,7 @@
         // =========================================================================
         function formatVND(amount) {
             const num = Number(amount) || 0;
-            return num.toLocaleString('vi-VN');// + ' ₫';
+            return num.toLocaleString('vi-VN') + ' ₫';
         }
 
         function parseIntegerInput(val) {
@@ -2694,11 +2705,11 @@
             document.getElementById('tui-edit-id').value = '';
             document.getElementById('tui-id').value = 'PT' + Math.floor(100000 + Math.random() * 900000);
             document.getElementById('tui-date').value = new Date().toISOString().split('T')[0];
-            document.getElementById('tui-student').innerHTML = db.HocVien.map(s => {
-                const cls = db.LopHoc.find(c => c.id === s.classId);
-                return `<option value="${s.id}">${s.id} - ${s.name} (${cls ? cls.name : 'Chưa xếp lớp'})</option>`;
-            }).join('');
-            onTuitionStudentChange();
+            document.getElementById('tui-student-dropdown')?.classList.add('hidden');
+            const firstStu = db.HocVien[0];
+            if (firstStu) {
+                selectTuitionStudent(firstStu.id);
+            }
             openModal('modal-tuition');
         }
 
@@ -2709,16 +2720,66 @@
             document.getElementById('tui-edit-id').value = v.id;
             document.getElementById('tui-id').value = v.id;
             document.getElementById('tui-date').value = v.date || new Date().toISOString().split('T')[0];
-            document.getElementById('tui-student').innerHTML = db.HocVien.map(s => {
-                const cls = db.LopHoc.find(c => c.id === s.classId);
-                return `<option value="${s.id}">${s.id} - ${s.name} (${cls ? cls.name : 'Chưa xếp lớp'})</option>`;
-            }).join('');
-            document.getElementById('tui-student').value = v.studentId;
+            document.getElementById('tui-student-dropdown')?.classList.add('hidden');
+            selectTuitionStudent(v.studentId, true);
             document.getElementById('tui-total').value = (Number(v.totalAmount) || 0).toLocaleString('vi-VN');
             document.getElementById('tui-paid').value = (Number(v.paidAmount) || 0).toLocaleString('vi-VN');
             document.getElementById('tui-method').value = v.method || 'Chuyển khoản ngân hàng';
             document.getElementById('tui-note').value = v.note || '';
             openModal('modal-tuition');
+        }
+
+        function filterTuitionStudents() {
+            const input = document.getElementById('tui-student-search');
+            const dropdown = document.getElementById('tui-student-dropdown');
+            if (!input || !dropdown) return;
+
+            const kw = removeVietnameseDiacritics(input.value).toLowerCase();
+            const matched = (db.HocVien || []).filter(s => {
+                const cls = db.LopHoc.find(c => c.id === s.classId);
+                const text = removeVietnameseDiacritics(`${s.id} ${s.name} ${s.phone || ''} ${cls ? cls.name : ''}`).toLowerCase();
+                return !kw || text.includes(kw);
+            });
+
+            if (matched.length === 0) {
+                dropdown.innerHTML = `<div class="px-3 py-2.5 text-xs text-slate-500 italic">Không tìm thấy học viên phù hợp.</div>`;
+            } else {
+                dropdown.innerHTML = matched.map(s => {
+                    const cls = db.LopHoc.find(c => c.id === s.classId);
+                    const debtVal = Number(s.debt) || 0;
+                    return `
+                        <button type="button" onmousedown="selectTuitionStudent('${s.id}')" class="w-full text-left px-3 py-2 hover:bg-slate-50 flex items-center justify-between gap-2 transition">
+                            <div class="min-w-0">
+                                <div class="text-xs font-semibold text-slate-800 truncate">${s.id} - ${s.name}</div>
+                                <div class="text-[11px] text-slate-400 truncate">${cls ? cls.name : 'Chưa xếp lớp'}${s.phone ? ' • ' + s.phone : ''}</div>
+                            </div>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold shrink-0 ${debtVal > 0 ? 'bg-rose-50 text-rose-700' : 'bg-emerald-50 text-emerald-700'}">
+                                ${debtVal > 0 ? 'Nợ: ' + formatVND(debtVal) : 'Hết nợ'}
+                            </span>
+                        </button>
+                    `;
+                }).join('');
+            }
+            dropdown.classList.remove('hidden');
+        }
+
+        function selectTuitionStudent(stuId, skipFeeUpdate = false) {
+            const stu = db.HocVien.find(s => s.id === stuId);
+            const hiddenInput = document.getElementById('tui-student');
+            const searchInput = document.getElementById('tui-student-search');
+            const dropdown = document.getElementById('tui-student-dropdown');
+
+            if (hiddenInput) hiddenInput.value = stuId || '';
+            if (searchInput) {
+                if (stu) {
+                    const cls = db.LopHoc.find(c => c.id === stu.classId);
+                    searchInput.value = `${stu.id} - ${stu.name} (${cls ? cls.name : 'Chưa xếp lớp'})`;
+                } else {
+                    searchInput.value = stuId || '';
+                }
+            }
+            if (dropdown) dropdown.classList.add('hidden');
+            if (!skipFeeUpdate) onTuitionStudentChange();
         }
 
         function onTuitionStudentChange() {
@@ -2734,8 +2795,17 @@
         function saveTuition(e) {
             e.preventDefault();
             const editId = document.getElementById('tui-edit-id').value;
-            const stuId = document.getElementById('tui-student').value;
+            let stuId = document.getElementById('tui-student').value;
+            if (!stuId) {
+                const rawSearch = (document.getElementById('tui-student-search')?.value || '').trim();
+                const found = db.HocVien.find(s => rawSearch.startsWith(s.id) || s.name.toLowerCase() === rawSearch.toLowerCase());
+                if (found) stuId = found.id;
+            }
             const stu = db.HocVien.find(s => s.id === stuId);
+            if (!stu) {
+                showToast('Vui lòng chọn học viên hợp lệ từ danh sách gợi ý!', 'warning');
+                return;
+            }
             const total = parseIntegerInput(document.getElementById('tui-total').value);
             const paid = parseIntegerInput(document.getElementById('tui-paid').value);
             const debt = Math.max(0, total - paid);
@@ -3111,6 +3181,90 @@
             if (selectedCat && cats.includes(selectedCat)) sel.value = selectedCat;
         }
 
+        function getFinancePartnerOptions() {
+            const options = [];
+            const seen = new Set();
+
+            (db.HocVien || []).forEach(s => {
+                const label = `${s.name} (${s.id})`;
+                if (!seen.has(label)) {
+                    seen.add(label);
+                    options.push({ group: 'Học viên', label, sub: s.phone ? `SĐT: ${s.phone}` : 'Học viên trung tâm' });
+                }
+            });
+
+            (db.GiaoVien || []).forEach(t => {
+                const label = `${t.name} (${t.id})`;
+                if (!seen.has(label)) {
+                    seen.add(label);
+                    options.push({ group: 'Giáo viên', label, sub: `${t.type || 'Giáo viên'}${t.phone ? ' • ' + t.phone : ''}` });
+                }
+            });
+
+            (db.ThuChi || []).forEach(f => {
+                const p = (f.partner || '').trim();
+                if (p && p !== '-' && !seen.has(p)) {
+                    seen.add(p);
+                    options.push({ group: 'Đối tác / Khác', label: p, sub: f.category || 'Đã giao dịch trước đó' });
+                }
+            });
+
+            return options;
+        }
+
+        function filterFinancePartners() {
+            const input = document.getElementById('fin-partner');
+            const dropdown = document.getElementById('fin-partner-dropdown');
+            if (!input || !dropdown) return;
+
+            const kw = removeVietnameseDiacritics(input.value).toLowerCase();
+            const allOptions = getFinancePartnerOptions();
+            const matched = allOptions.filter(opt => {
+                const cleanLabel = removeVietnameseDiacritics(opt.label).toLowerCase();
+                const cleanGroup = removeVietnameseDiacritics(opt.group).toLowerCase();
+                return !kw || cleanLabel.includes(kw) || cleanGroup.includes(kw);
+            });
+
+            if (matched.length === 0) {
+                dropdown.innerHTML = `<div class="px-3 py-2 text-xs text-slate-500 italic">Không có sẵn — nhấn Lưu để dùng tên "${input.value.trim() || 'đối tượng mới'}"</div>`;
+            } else {
+                dropdown.innerHTML = matched.map(opt => {
+                    const badgeCls = opt.group === 'Học viên' ? 'bg-blue-50 text-blue-700' :
+                                     opt.group === 'Giáo viên' ? 'bg-purple-50 text-purple-700' : 'bg-slate-100 text-slate-700';
+                    return `
+                        <button type="button" onmousedown="selectFinancePartner('${opt.label.replace(/'/g, "\\'")}')" class="w-full text-left px-3 py-2 hover:bg-slate-50 flex items-center justify-between gap-2 transition">
+                            <div class="min-w-0">
+                                <div class="text-xs font-semibold text-slate-800 truncate">${opt.label}</div>
+                                <div class="text-[11px] text-slate-400 truncate">${opt.sub}</div>
+                            </div>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold shrink-0 ${badgeCls}">${opt.group}</span>
+                        </button>
+                    `;
+                }).join('');
+            }
+            dropdown.classList.remove('hidden');
+        }
+
+        function selectFinancePartner(val) {
+            const input = document.getElementById('fin-partner');
+            const dropdown = document.getElementById('fin-partner-dropdown');
+            if (input) input.value = val;
+            if (dropdown) dropdown.classList.add('hidden');
+        }
+
+        document.addEventListener('click', (e) => {
+            const input = document.getElementById('fin-partner');
+            const dropdown = document.getElementById('fin-partner-dropdown');
+            if (input && dropdown && !input.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+            const tuiInput = document.getElementById('tui-student-search');
+            const tuiDropdown = document.getElementById('tui-student-dropdown');
+            if (tuiInput && tuiDropdown && !tuiInput.contains(e.target) && !tuiDropdown.contains(e.target)) {
+                tuiDropdown.classList.add('hidden');
+            }
+        });
+
         function renderFinance() {
             const search = (document.getElementById('finance-search')?.value || '').toLowerCase();
             const typeFilter = document.getElementById('finance-type-filter')?.value || '';
@@ -3170,6 +3324,7 @@
             document.getElementById('fin-id').value = (defaultType === 'Thu' ? 'PTQ' : 'PCQ') + Math.floor(100000 + Math.random() * 900000);
             document.getElementById('fin-type').value = defaultType;
             document.getElementById('fin-date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('fin-partner-dropdown')?.classList.add('hidden');
             updateFinanceCategories();
             openModal('modal-finance');
         }
@@ -3185,6 +3340,7 @@
             updateFinanceCategories(f.category);
             document.getElementById('fin-amount').value = (Number(f.amount) || 0).toLocaleString('vi-VN');
             document.getElementById('fin-partner').value = f.partner || '';
+            document.getElementById('fin-partner-dropdown')?.classList.add('hidden');
             document.getElementById('fin-method').value = f.method || 'Tiền mặt';
             document.getElementById('fin-desc').value = f.desc || '';
             openModal('modal-finance');
